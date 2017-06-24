@@ -19,11 +19,11 @@ if OPTIONS.include?(:h)
     Useful for consolidating a selection of dotfiles in one place
     so that they can be synchronized between machines or managed
     with a VCS. If you do this, it’s advisable to 1) rewrite your
-    configuration files to be machine-/platform-aware and 2) be
-    judicious about which files you include (some package managers,
-    for example, may create hidden directories that grow to many
-    gigabytes in size, and keeping them synchronized between
-    machines would serve little purpose).
+    configuration files as necessary to be machine-/platform-aware,
+    and 2) be judicious about which files you include (some package
+    managers, for example, may create hidden directories that grow
+    to many gigabytes in size, and keeping them synchronized
+    between machines would serve little purpose).
 
   HERE
   exit 0
