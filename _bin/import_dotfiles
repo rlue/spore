@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+
+require_relative '../_lib/spore'
+
+if OPTIONS.include?(:h)
+  puts <<-HERE.gsub(/^ {4}/, '')
+    import_dotfiles -- a dotfile management script
+
+    Usage: import_dotfiles [options]
+
+        -h, --help                       Display this message
+        -v                               Run with verbose output
+        -n                               No-op (a.k.a. “dry-run”)
+
+    Imports dotfiles from the home directory to `~/.config` (i.e.,
+    moves them into `~/.config` and then creates symlinks to
+    restore their presence in the home directory).
+
+    Useful for consolidating a selection of dotfiles in one place
+    so that they can be synchronized between machines or managed
+    with a VCS. If you do this, it’s advisable to 1) rewrite your
+    configuration files to be machine-/platform-aware and 2) be
+    judicious about which files you include (some package managers,
+    for example, may create hidden directories that grow to many
+    gigabytes in size, and keeping them synchronized between
+    machines would serve little purpose).
+
+  HERE
+  exit 0
+end
+
+def size(file)
+  if File.file?(file)
+    size = File.size(file)
+  elsif File.directory?(file)
+    size = Dir["#{file}/**/*"].map { |file| File.size(file) }.inject(:+)
+  end
+
+  return '0B' if size.zero?
+  case Math::log(size, 1024).to_i
+  when 0
+    "#{size}B"
+  when 1
+    "#{size/1024}K"
+  when 2
+    "#{size/(1024**2)}M"
+  when 3
+    "#{size/(1024**3)}G"
+  end
+end
+
+puts 'The following dotfiles are symlinks, and will be skipped during import:'
+LOCAL_DOTFILES.select { |file| File.symlink?(file) }.each do |file|
+  puts "  #{File.basename(file)} (-> #{File.readlink(file)})"
+end
+puts
+
+importable = LOCAL_DOTFILES.reject { |file| File.symlink?(file) } - [SOURCE_DIR, MACOS_DOTFILES].flatten
+src_files  = Dir["#{SOURCE_DIR}/[^_]*"]
+
+conflicts = importable.map { |file| File.basename(file)[1..-1] } &
+              src_files.map { |file| File.basename(file) }
+
+if conflicts.any?
+  STDERR.puts "The following dotfiles conflict with existing files in the #{File.basename(SOURCE_DIR)}/ folder:"
+  conflicts.each { |file| puts "  .#{file}" }
+  STDERR.puts 'Please merge, move, or delete these files before proceeding.'
+  exit 1
+else
+  puts 'Calculating file sizes, this could take a minute...'
+  imp_sizes  = importable.map { |file| size(file) }
+  selections = Ask.checkbox('Select the dotfiles you wish to import',
+                            importable.map.with_index do |file, i|
+                              "#{File.basename(file)} (#{imp_sizes[i]})"
+                            end,
+                            default: imp_sizes.map { |size| size[-1] =~ /[BK]/ })
+  to_import  = importable.select.with_index { |file, i| selections[i] }
+  to_import.each do |src|
+    dest = "#{SOURCE_DIR}/#{File.basename(src)[1..-1]}"
+    puts "importing #{File.basename(src)}..." if OPTIONS.include?(:v)
+    FileUtils.mv(src, dest, noop: OPTIONS.include?(:n))
+    FileUtils.ln_s(dest, src, noop: OPTIONS.include?(:n))
+  end
+
+  exit 0
+end

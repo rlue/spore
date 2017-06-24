@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+require_relative '../_lib/spore'
+
+if OPTIONS.include?(:h)
+  puts <<-HERE.gsub(/^ {4}/, '')
+    purge_orphans -- a dotfile management script
+
+    Usage: purge_orphans [options]
+
+        -h, --help                       Display this message
+        -v                               Run with verbose output
+        -i                               Interactive (prompt before deleting)
+        -n                               No-op (a.k.a. “dry-run”)
+
+    Removes orphaned symbolic-link dotfiles from the home
+    directory.
+
+    If you’ve used the accompanying `spawn_links` script and
+    later pruned the contents of your `~/.config` directory,
+    you may find that you have dotfiles in your home directory
+    pointing to files which no longer exist. This script will
+    help keep your dotfiles and your `~/.config` directory in
+    sync.
+
+  HERE
+  exit 0
+end
+
+orphans = LOCAL_DOTFILES.select do |file|
+            File.symlink?(file) &&
+              (!File.exist?(file) || IGNORE.include?(File.realpath(file)))
+          end
+
+if orphans.any?
+  if OPTIONS.include?(:i)
+    STDERR.puts 'Orphaned dotfiles detected:'
+    orphans.each do |file|
+      STDERR.puts "  #{File.basename(file)} -> #{File.readlink(file)}"
+    end
+    STDERR.puts 'Purge now? [Y/n]'
+    noop = (STDIN.getch.downcase != 'y')
+  end
+
+  if OPTIONS.include?(:v)
+    orphans.each do |file|
+      puts "deleting orphaned symlink #{File.basename(file)}"
+    end
+  end
+  FileUtils.rm_rf(orphans, noop: OPTIONS.include?(:n) || noop)
+end
+
+exit 0

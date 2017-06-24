@@ -1,0 +1,6 @@
+# Ignore everything...
+/[^_]*
+
+# ...except:
+!.gitignore
+!README.md

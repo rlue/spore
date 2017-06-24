@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+
+require_relative '../_lib/spore'
+
+if OPTIONS.include?(:h)
+  puts <<-HERE.gsub(/^ {4}/, '')
+    spawn_links -- a dotfile management script
+
+    Usage: spawn_links [options]
+
+        -h, --help                       Display this message
+        -v                               Run with verbose output
+        -f                               Force (overwrites all file conflicts)
+        -i                               Interactive (prompt on file conflicts)
+        -n                               No-op (a.k.a. “dry-run”)
+
+    For each file in the `~/.config` directory, creates a
+    corresponding symbolic-link dotfile in the home directory
+    (e.g., creates a symbolic link at `~/.bashrc` pointing to
+    `~/.config/bashrc`). Ignores files whose names begin with a
+    dot (.) or and underscore (_), as well as those listed in
+    `~/.config/.spawnignore`.
+
+    By default (i.e., without the -f or -i flags), conflicting
+    files are moved to a `~/clobber` directory. It’s a good idea
+    to perform a dry-run first (i.e., include the -v and -n
+    flags) to see what changes this script will make before
+    actually committing to them.
+
+  HERE
+  exit 0
+end
+
+# Initialize file lists
+src_files  = Dir["#{SOURCE_DIR}/[^_]*"] - IGNORE
+dest_files = src_files.map { |file| "#{Dir.home}/.#{File.basename(file)}" }
+conflicts  = dest_files.select { |file| File.exist?(file) }
+  .reject { |file| File.symlink?(file) && (File.realpath(file) =~ /^#{SOURCE_DIR}/) }
+new_files  = dest_files.reject { |file| File.exist?(file) }
+
+if OPTIONS.include?(:i)
+elsif OPTIONS.include?(:f)
+  if OPTIONS.include?(:v)
+    conflicts.each do |file|
+      if File.symlink?(file)
+        entry = "#{File.basename(file)} (symlink -> #{File.realpath(file)})"
+      elsif File.directory?(file)
+        entry = "#{File.basename(file)}/"
+      elsif File.file?(file)
+        entry = "#{File.basename(file)}"
+      end
+      puts "replacing #{entry}"
+    end
+  end
+  FileUtils.rm_rf(dest_files, noop: OPTIONS.include?(:n))
+elsif conflicts.any? &&
+  FileUtils.mkdir_p("#{Dir.home}/clobber", noop: OPTIONS.include?(:n))
+  timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+
+  conflicts.each do |file|
+    dest = "#{Dir.home}/clobber/#{File.basename(file)[1..-1]}_#{timestamp}"
+    puts "moving #{File.basename(file)} to #{dest}" if OPTIONS.include?(:v)
+    FileUtils.mv(file, dest, noop: OPTIONS.include?(:n))
+  end
+end
+
+src_files.zip(dest_files).each do |files|
+  if OPTIONS.include?(:i) && conflicts.include?(files.last)
+    if File.symlink?(files.last)
+      entry = "#{File.basename(files.last)} (symlink -> #{File.realpath(files.last)})"
+    elsif File.directory?(files.last)
+      entry = "#{File.basename(files.last)}/"
+    elsif File.file?(files.last)
+      entry = "#{File.basename(files.last)}"
+    end
+    STDERR.puts "replace file #{entry}? [y/N]"
+
+    noop = (STDIN.getch.downcase != 'y')
+  elsif OPTIONS.include?(:v) && new_files.include?(files.last)
+    puts "creating link #{File.basename(files.last)} -> #{files.first}"
+  end
+
+  FileUtils.ln_s(files.first, files.last, force: true,
+                                          noop: OPTIONS.include?(:n) || noop)
+end
+
+exit 0
