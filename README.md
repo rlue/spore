@@ -28,7 +28,7 @@ $ ~/.config/_bin/import_dotfiles
 
 #### Want to keep your files on GitHub?
 
-First, [create a new repository][new] (I suggest naming it ‘.config’). Then,
+First, [create a new repository][new] (I suggest naming it `.config`). Then,
 
 ```
 $ cd ~/.config
