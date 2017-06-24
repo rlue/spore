@@ -20,7 +20,7 @@ $ ~/.config/_bin/import_dotfiles
 ### Don’t?
 
 ```
-$ git clone https://github.com/rlue/spore.git ~/.config
+$ git clone https://github.com/rlue/spore ~/.config
 $ ~/.config/_bin/import_dotfiles
 ```
 
