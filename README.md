@@ -16,14 +16,20 @@ Installation
 $ git clone https://github.com/rlue/spore
 $ mv spore/* spore/.[^.]* ~/.config
 $ rmdir spore
-$ ~/.config/_bin/import_dotfiles
+$ cd ~/.config
+$ git submodule init
+$ git submodule update
+$ _bin/import_dotfiles
 ```
 
 #### Don’t?
 
 ```
 $ git clone https://github.com/rlue/spore ~/.config
-$ ~/.config/_bin/import_dotfiles
+$ cd ~/.config
+$ git submodule init
+$ git submodule update
+$ _bin/import_dotfiles
 ```
 
 ### Syncing Between Machines
