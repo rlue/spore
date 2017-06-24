@@ -42,7 +42,7 @@ if orphans.any?
     noop = (STDIN.getch.downcase != 'y')
   end
 
-  if OPTIONS.include?(:v)
+  if OPTIONS.include?(:v) && !noop
     orphans.each do |file|
       puts "deleting orphaned symlink #{File.basename(file)}"
     end

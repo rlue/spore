@@ -8,7 +8,9 @@ The idea is simple: keep all your favorite dotfiles inside `~/.config` (for easy
 Installation
 ------------
 
-### Already have a `~/.config` directory?
+### Getting up and Running
+
+#### Already have a `~/.config` directory?
 
 ```
 $ git clone https://github.com/rlue/spore
@@ -17,44 +19,52 @@ $ rmdir spore
 $ ~/.config/_bin/import_dotfiles
 ```
 
-### Don’t?
+#### Don’t?
 
 ```
 $ git clone https://github.com/rlue/spore ~/.config
 $ ~/.config/_bin/import_dotfiles
 ```
 
-### Advanced
+### Syncing Between Machines
 
-#### Want to keep your files on GitHub?
+Here are two options:
 
-First, [create a new repository][new] (I suggest naming it `.config`). Then,
+#### Syncthing
+
+I use [Syncthing][st] to mirror directories between my desktop, my laptop, and my phone. I highly recommend it, especially since once you get it set up, it requires no manual intervention.
+
+#### Git
+
+It may also be nice to keep a copy of your config files as a git repo somewhere, just in the off chance you need access to your configuration on a computer that doesn’t belong to you.
+
+**WARNING:** If you have any sensitive information in your config files (_e.g.,_ API or _especially_ pgp keys), do **NOT** push those to GitHub or any other public platform.
+
+To do this on GitHub, for instance, first [create a new repository][new] (I suggest naming it `.config`). Then,
 
 ```
 $ cd ~/.config
 
-# designate your new repository as remote ‘origin’...
-$ git remote rename origin upstream
-$ git remote add origin https://github.com/<your_username>/<your_repo>
+# track your new remote
+# (I chose the name ‘in_situ’, but you can call it whatever you want)...
+$ git remote add in_situ https://github.com/<your_username>/<your_repo>
 
-# make it yours...
+# make the repo yours...
 $ rm .gitignore README.md
 $ git add .
 $ git commit -m “Import dotfiles”
 
 # and push.
-$ git push -u origin master
+$ git push -u in_situ master
 ```
 
-**WARNING:** If you have any sensitive information in your config files (_e.g.,_ gpg or API keys), do **NOT** push those to GitHub or any other public platform.
+### Updates
 
-#### Want to merge future updates?
-
-I probably won’t update this project. But if I do, and you followed the directions above (most crucially, `git remote rename`), then you can pull in the changes with:
+This project probably won’t see much in the way of improvements or future changes. But if it does, you can pull updates like so:
 
 ```
-$ git fetch upstream
-$ git rebase upstream/master
+$ git fetch origin
+$ git rebase origin/master
 ```
 
 Usage
@@ -83,6 +93,16 @@ Be sure to remove the dot from the start of each filename; `spawn_links` automat
 
 Every so often, as you modify your config files, the dotfiles in your home directory may fall out of sync with the files stored in your `~/.config` folder. If you have any symlinked dotfiles that point to config files which no longer exist, you can clear them out with this script.
 
+If you want to remove all the symlinks you’ve previously spawned, simply relocate your `~/.config` folder temporarily and then run this script:
+
+```
+$ mv ~/.config ~/config
+$ ~/config/_bin/purge_orphans
+$ mv ~/config ~/.config
+```
+
+(This works because moving the config directory orphans all previously spawned symlinks.)
+
 License
 -------
 
@@ -90,4 +110,5 @@ The MIT License (MIT)
 
 Copyright © 2017 Ryan Lue
 
+[st]: https://syncthing.net/
 [new]: https://github.com/new
