@@ -73,6 +73,8 @@ $ git fetch origin
 $ git rebase origin/master
 ```
 
+**Note:** This may not work if your `.git` configuration files are stored in `~/.config`. You will probably get stuck in “detached HEAD” mode. I haven’t figured out a way around this yet. Don’t say I didn’t warn you.
+
 Usage
 -----
 
