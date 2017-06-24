@@ -53,7 +53,7 @@ elsif OPTIONS.include?(:f)
     end
   end
   FileUtils.rm_rf(dest_files, noop: OPTIONS.include?(:n))
-elsif conflicts.any? &&
+elsif conflicts.any?
   FileUtils.mkdir_p("#{Dir.home}/clobber", noop: OPTIONS.include?(:n))
   timestamp = Time.now.strftime('%Y%m%d%H%M%S')
 
@@ -73,13 +73,14 @@ src_files.zip(dest_files).each do |files|
     elsif File.file?(files.last)
       entry = "#{File.basename(files.last)}"
     end
-    STDERR.puts "replace file #{entry}? [y/N]"
+    STDERR.puts "replace #{entry}? [y/N]"
 
     noop = (STDIN.getch.downcase != 'y')
   elsif OPTIONS.include?(:v) && new_files.include?(files.last)
     puts "creating link #{File.basename(files.last)} -> #{files.first}"
   end
 
+  FileUtils.rm(files.last, noop: OPTIONS.include?(:n) || noop) if File.directory?(files.last)
   FileUtils.ln_s(files.first, files.last, force: true,
                                           noop: OPTIONS.include?(:n) || noop)
 end
