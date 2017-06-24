@@ -24,6 +24,39 @@ $ git clone https://github.com/rlue/spore.git ~/.config
 $ ~/.config/_bin/import_dotfiles
 ```
 
+### Advanced
+
+#### Want to keep your files on GitHub?
+
+First, [create a new repository][new] (I suggest naming it ‘.config’). Then,
+
+```
+$ cd ~/.config
+
+# designate your new repository as remote ‘origin’...
+$ git remote rename origin upstream
+$ git remote add origin https://github.com/<your_username>/<your_repo>
+
+# make it yours...
+$ rm .gitignore README.md
+$ git add .
+$ git commit -m “Import dotfiles”
+
+# and push.
+$ git push -u origin master
+```
+
+**WARNING:** If you have any sensitive information in your config files (_e.g.,_ gpg or API keys), do **NOT** push those to GitHub or any other public platform.
+
+#### Want to merge future updates?
+
+I probably won’t update this project. But if I do, and you followed the directions above (most crucially, `git remote rename`), then you can pull in the changes with:
+
+```
+$ git fetch upstream
+$ git rebase upstream/master
+```
+
 Usage
 -----
 
@@ -56,3 +89,5 @@ License
 The MIT License (MIT)
 
 Copyright © 2017 Ryan Lue
+
+[new]: https://github.com/new
