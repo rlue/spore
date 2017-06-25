@@ -1,3 +1,10 @@
+Notice of Deprecation
+---------------------
+
+It appears that the pre-existing [GNU Stow][stow] is capable of all the same things as spore, serves a more generalized purpose, and is compatible with a wider range of platforms.
+
+This document is preserved as a conceptual suggestion of how you might use Stow to manage your dotfiles.
+
 spore – Disseminate Your Dotfiles
 =================================
 
@@ -118,5 +125,6 @@ The MIT License (MIT)
 
 Copyright © 2017 Ryan Lue
 
+[stow]: https://www.gnu.org/software/stow/manual/stow.html
 [st]: https://syncthing.net/
 [new]: https://github.com/new
